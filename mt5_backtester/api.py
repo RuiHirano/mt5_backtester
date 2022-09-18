@@ -1,7 +1,5 @@
-import logging
-import re
 from typing import List
-from type import Rate, AccountInfo, TradeRequest, TradeResult
+from .type import Rate, AccountInfo, TradeRequest, TradeResult
 import pandas as pd
 import zmq
 

@@ -1,7 +1,7 @@
 import logging
-from server import Server
-from api import API
-from type import TradeRequest, Event
+from .server import Server
+from .api import API
+from .type import TradeRequest, Event
 
 class Backtester():
     def __init__(self, level=logging.INFO):
@@ -43,5 +43,4 @@ if __name__ == "__main__":
                 print(result)
             elif event == Event.ON_DEINIT:
                 pass
-            #print(tick)
 

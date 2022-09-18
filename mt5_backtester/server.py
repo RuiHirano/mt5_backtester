@@ -1,7 +1,7 @@
 import json
 import logging
 import zmq
-from type import StreamData, Event
+from .type import StreamData, Event
 
 class Server():
     def __init__(self, address="127.0.0.1", port=5556):

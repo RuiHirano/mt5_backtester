@@ -1,7 +1,6 @@
 import json
 import zmq
 import time
-import sys
 import threading
 
 class APIThread(threading.Thread):
