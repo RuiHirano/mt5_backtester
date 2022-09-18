@@ -2,6 +2,9 @@ import json
 import logging
 import zmq
 from .type import StreamData, Event
+from .utils import to_stream_data
+import logging
+logger = logging.getLogger(__name__)
 
 class Server():
     def __init__(self, address="127.0.0.1", port=5556):
@@ -17,13 +20,12 @@ class Server():
         while True:
             # data: {"event": "on_tick", "data": {}}
             res = self.socket.recv_string()
-            data = json.loads(res)
-            res = StreamData(event=Event(data["event"]), data={})
-            print("debug: ",res)
-            yield (res.event, res.data)
-            message="thank you"
+            json_data = json.loads(res)
+            stream_data = to_stream_data(json_data)
+            yield (stream_data.event, stream_data.data)
+            message="ok"
             self.socket.send_string("Reply: %s" % message)
-            if res.event == Event.ON_DEINIT:
+            if stream_data.event == Event.ON_DEINIT:
                 break
 
     def stop(self):

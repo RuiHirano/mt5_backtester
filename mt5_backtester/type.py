@@ -1,6 +1,6 @@
 
 
-from typing import NamedTuple
+from typing import NamedTuple, Union
 from enum import Enum
 
 class AccountInfo(NamedTuple):
@@ -63,11 +63,23 @@ class TradeTransaction(NamedTuple):
     margin_rate: float
     timestamp: int
 
-class StreamData(NamedTuple):
-    event: str
-    data: object
+class Event(str, Enum):
+    ON_TICK = "ON_TICK"
+    ON_INIT = "ON_INIT"
+    ON_DEINIT = "ON_DEINIT"
 
-class Event(Enum):
-    ON_TICK = "on_tick"
-    ON_INIT = "on_init"
-    ON_DEINIT = "on_deinit"
+class OnTickData(NamedTuple):
+    tick: Tick
+
+class StreamData(NamedTuple):
+    event: Event
+    data: Union[object, OnTickData]
+
+class APIRequestType(str, Enum):
+    GET_RATES = "GET_RATES"
+    GET_ACCOUNT_INFO = "GET_ACCOUNT_INFO"
+    ORDER_SEND = "ORDER_SEND"
+
+class APIRequest(NamedTuple):
+    type: APIRequestType
+    data: object

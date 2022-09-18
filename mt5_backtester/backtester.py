@@ -9,16 +9,22 @@ class Backtester():
         self.logger = logging.getLogger(__name__)
         self.server = Server(address="127.0.0.1", port=5556)
         self.api = API(address="127.0.0.1", port=5557)
+        self.setup()
 
     def __enter__(self):
+        return self
+        
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def setup(self):
         # run server
         self.logger.info('[backtester] Starting server...')
         self.server.start()
         self.api.connect()
         self.logger.info('[backtester] Start at {}:{}'.format(self.server.address, self.server.port))
-        return self
-        
-    def __exit__(self, exc_type, exc_value, traceback):
+
+    def close(self):
         # stop server
         self.logger.info('[backtester] Stopping server...')
         self.server.stop()
