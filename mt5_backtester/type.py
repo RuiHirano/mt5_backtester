@@ -3,6 +3,33 @@
 from typing import NamedTuple, Union
 from enum import Enum
 
+class Order(NamedTuple):
+    ticket: int
+    type: int
+    state: int
+    symbol: str
+    volume: float
+    open_price: float
+    stoploss: float
+    takeprofit: float
+    comment: str
+    expiration: int
+    reason: int
+    timestamp: int
+
+class Position(NamedTuple):
+    ticket: int
+    symbol: str
+    volume: float
+    type: int
+    open_price: float
+    stoploss: float
+    takeprofit: float
+    swap: float
+    profit: float
+    comment: str
+    timestamp: int
+
 class AccountInfo(NamedTuple):
     balance: float
     credit: float
@@ -45,24 +72,6 @@ class TradeResult(NamedTuple):
     ticket: int
     retcode: int
 
-class TradeTransaction(NamedTuple):
-    ticket: int
-    order: int
-    open_time: int
-    open_price: float
-    sl: float
-    tp: float
-    close_time: int
-    close_price: float
-    commission: float
-    swaps: float
-    profit: float
-    comment: str
-    magic: int
-    volume: float
-    margin_rate: float
-    timestamp: int
-
 class Event(str, Enum):
     ON_TICK = "ON_TICK"
     ON_INIT = "ON_INIT"
@@ -79,6 +88,14 @@ class APIRequestType(str, Enum):
     GET_RATES = "GET_RATES"
     GET_ACCOUNT_INFO = "GET_ACCOUNT_INFO"
     ORDER_SEND = "ORDER_SEND"
+    GET_ORDERS = "GET_ORDERS"
+    GET_ORDER = "GET_ORDER"
+    GET_POSITIONS = "GET_POSITIONS"
+    GET_POSITION = "GET_POSITION"
+    GET_HISTORY_ORDERS = "GET_HISTORY_ORDERS"
+    GET_HISTORY_ORDER = "GET_HISTORY_ORDER"
+    GET_HISTORY_POSITIONS = "GET_HISTORY_POSITIONS"
+    GET_HISTORY_POSITION = "GET_HISTORY_POSITION"
 
 class APIRequest(NamedTuple):
     type: APIRequestType

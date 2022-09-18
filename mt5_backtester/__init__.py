@@ -1,3 +1,3 @@
 from .backtester import Backtester
-from .type import AccountInfo, Tick, Rate, TradeRequest, TradeResult, TradeTransaction, Event
+from .type import *
 from .mock_ea import ExpertAdvisor

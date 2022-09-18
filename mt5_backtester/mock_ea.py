@@ -3,7 +3,7 @@ import zmq
 import time
 import threading
 from .utils import to_api_request
-from .type import APIRequestType, AccountInfo, Rate, TradeResult, Tick
+from .type import APIRequestType, AccountInfo, Rate, TradeResult, Tick, Order, Position
 
 class APIThread(threading.Thread):
     """Thread class with a stop() method. The thread itself has to check
@@ -34,6 +34,38 @@ class APIThread(threading.Thread):
             elif api_request.type == APIRequestType.ORDER_SEND:
                 result = TradeResult(ticket=123456789, retcode=0)
                 message = json.dumps(result._asdict())
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_ORDERS:
+                orders = [Order(ticket=123456789, type=0, state=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", expiration=123456789, reason=0, timestamp=123456789)]
+                message = json.dumps([order._asdict() for order in orders])
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_ORDER:
+                order = Order(ticket=123456789, type=0, state=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", expiration=123456789, reason=0, timestamp=123456789)
+                message = json.dumps(order._asdict())
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_POSITIONS:
+                positions = [Position(ticket=123456789, type=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", timestamp=123456789, swap=0.00, profit=0.00)]
+                message = json.dumps([position._asdict() for position in positions])
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_POSITION:
+                position = Position(ticket=123456789, type=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", timestamp=123456789, swap=0.00, profit=0.00)
+                message = json.dumps(position._asdict())
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_HISTORY_ORDERS:
+                orders = [Order(ticket=123456789, type=0, state=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", expiration=123456789, reason=0, timestamp=123456789)]
+                message = json.dumps([order._asdict() for order in orders])
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_HISTORY_ORDER:
+                order = Order(ticket=123456789, type=0, state=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", expiration=123456789, reason=0, timestamp=123456789)
+                message = json.dumps(order._asdict())
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_HISTORY_POSITIONS:
+                positions = [Position(ticket=123456789, type=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", timestamp=123456789, swap=0.00, profit=0.00)]
+                message = json.dumps([position._asdict() for position in positions])
+                self.socket.send_string(message)
+            elif api_request.type == APIRequestType.GET_HISTORY_POSITION:
+                position = Position(ticket=123456789, type=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", timestamp=123456789, swap=0.00, profit=0.00)
+                message = json.dumps(position._asdict())
                 self.socket.send_string(message)
             else:
                 message = "Unknown"
@@ -66,9 +98,9 @@ class ExpertAdvisor():
         time.sleep(1)
         print('[backtester] Done.')
 
-    def run(self):
+    def run(self, iter=10):
         self.on_init()
-        for i in range(10):
+        for i in range(iter):
             self.on_tick()
             time.sleep(0.1)
         self.on_deinit()

@@ -13,6 +13,8 @@ if __name__ == "__main__":
                 print("rates: ", rates)
                 account = bt.api.get_account_info()
                 print("account: ", account)
+                orders = bt.api.get_orders()
+                print("orders: ", orders)
                 request = TradeRequest(symbol="EURUSD", volume=0.01, type=0, price=0, stoploss=0, takeprofit=0, magic=0, comment="test", expiration=0, slippage=0)
                 result = bt.api.order_send(request)
                 print("order send result: ", result)

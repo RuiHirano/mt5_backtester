@@ -3,7 +3,7 @@ from typing import List
 from .type import APIRequest, APIRequestType, Rate, AccountInfo, TradeRequest, TradeResult
 import pandas as pd
 import zmq
-from .utils import to_account_info, to_trade_result, to_rates
+from .utils import to_account_info, to_trade_result, to_rates, to_orders, to_order, to_positions, to_position
 import logging
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class API:
         return account_info
 
     ####################
-    # Order API      #
+    # Trade API        #
     ####################
     def order_send(self, request: TradeRequest) -> TradeResult:
         req = APIRequest(type=APIRequestType.ORDER_SEND, data=request._asdict())
@@ -63,3 +63,83 @@ class API:
         json_data = json.loads(recv_message)
         result = to_trade_result(json_data)
         return result
+
+    def get_orders(self):
+        req = APIRequest(type=APIRequestType.GET_ORDERS, data={})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_orders] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        orders = to_orders(json_data)
+        return orders
+
+    def get_order(self, ticket):
+        req = APIRequest(type=APIRequestType.GET_ORDER, data={"ticket": ticket})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_order] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        order = to_order(json_data)
+        return order
+
+    def get_positions(self):
+        req = APIRequest(type=APIRequestType.GET_POSITIONS, data={})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_positions] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        positions = to_positions(json_data)
+        return positions
+
+    def get_position(self, ticket):
+        req = APIRequest(type=APIRequestType.GET_POSITION, data={"ticket": ticket})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_position] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        position = to_position(json_data)
+        return position
+
+    def get_history_orders(self):
+        req = APIRequest(type=APIRequestType.GET_HISTORY_ORDERS, data={})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_history_orders] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        orders = to_orders(json_data)
+        return orders
+
+    def get_history_order(self, ticket):
+        req = APIRequest(type=APIRequestType.GET_HISTORY_ORDER, data={"ticket": ticket})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_history_order] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        order = to_order(json_data)
+        return order
+
+    def get_history_positions(self):
+        req = APIRequest(type=APIRequestType.GET_HISTORY_POSITIONS, data={})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_history_positions] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        positions = to_positions(json_data)
+        return positions
+
+    def get_history_position(self, ticket):
+        req = APIRequest(type=APIRequestType.GET_HISTORY_POSITION, data={"ticket": ticket})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[get_history_position] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        position = to_position(json_data)
+        return position
