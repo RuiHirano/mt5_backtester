@@ -22,6 +22,18 @@ class API:
         self.context.destroy()
 
     ####################
+    # General API      #
+    ####################
+    def send_config(self, config):
+        req = APIRequest(type=APIRequestType.SEND_CONFIG, data=config)
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[send_config] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        return json_data
+
+    ####################
     # Time Series API  #
     ####################
     def get_rates(self, symbol, timeframe, start, end, dataframe=True) -> List[Rate]:

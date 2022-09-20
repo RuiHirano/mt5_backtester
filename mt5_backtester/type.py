@@ -3,6 +3,20 @@
 from typing import NamedTuple, Union
 from enum import Enum
 
+class TimeFrame(int, Enum):
+    PERIOD_M1 = "PERIOD_M1"
+    PERIOD_M5 = "PERIOD_M5"
+    PERIOD_M15 = "PERIOD_M15"
+    PERIOD_M30 = "PERIOD_M30"
+    PERIOD_H1 = "PERIOD_H1"
+    PERIOD_H4 = "PERIOD_H4"
+    PERIOD_D1 = "PERIOD_D1"
+    PERIOD_W1 = "PERIOD_W1"
+    PERIOD_MN1 = "PERIOD_MN1"
+
+class Config(NamedTuple):
+    timeframe: TimeFrame   # minutes
+
 class Order(NamedTuple):
     ticket: int
     type: int
@@ -96,6 +110,7 @@ class APIRequestType(str, Enum):
     GET_HISTORY_ORDER = "GET_HISTORY_ORDER"
     GET_HISTORY_POSITIONS = "GET_HISTORY_POSITIONS"
     GET_HISTORY_POSITION = "GET_HISTORY_POSITION"
+    SEND_CONFIG = "SEND_CONFIG"
 
 class APIRequest(NamedTuple):
     type: APIRequestType

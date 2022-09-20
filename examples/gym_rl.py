@@ -1,7 +1,5 @@
 
 from mt5_backtester import Event, BacktestEnv, TradeRequest
-import random
-from enum import Enum
 
 if __name__ == "__main__":
     with BacktestEnv() as env:
@@ -15,7 +13,7 @@ if __name__ == "__main__":
                 print("episode: {}, step: {}, done: {}, reward: {}".format(k, step, done, reward))
                 step += 1
         print("finished!")
-        
+
     '''env = BacktestEnv()
     for k in range(10): # up to 10 trades
         done = False

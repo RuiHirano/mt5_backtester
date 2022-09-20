@@ -1,41 +1,48 @@
 //+------------------------------------------------------------------+
-//|                                       JiowclSubscriberClient.mq5 |
-//|                                Copyright 2017-2021, Ji-Feng Tsai |
-//|                                        https://github.com/jiowcl |
+//|                                              MT5BacktesterEA.mq5 |
+//|                                  Copyright 2022, MetaQuotes Ltd. |
+//|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
-#property copyright   "Copyright 2021, Ji-Feng Tsai"
-#property link        "https://github.com/jiowcl/MQL-CopyTrade"
-#property version     "1.12"
-#property description "MT5 Copy Trade Subscriber Application. Subscribe order status from source signal trader."
-#property strict
+#property copyright "Copyright 2022, MetaQuotes Ltd."
+#property link      "https://www.mql5.com"
+#property version   "1.00"
 
 #include <Zmq/Zmq.mqh>
-input string Server = "tcp://localhost:5556";  // Subscribe server ip
-input uint   ServerDelayMilliseconds = 300;                     // Subscribe from server delay milliseconds (Default is 300)
-input bool   ServerReal              = false;                   // Under real server (Default is false)
+// allow webrequest http://127.0.0.1:5556, http://127.0.0.1:5557
+input string APIServer = "tcp://localhost:5557";  // api server ip
+input string StreamServer = "tcp://localhost:5556";  // stream server ip
 
-//--- Globales Application
-const string app_name    = "Jiowcl Expert Advisor";
+string api_server        = "";
+string stream_server        = "";
 
 //--- Globales ZMQ
-Context context;
-Socket  socket(context, ZMQ_REQ);
+string appname = "MT5BacktesterEA";
+Context context(appname);
+Socket  stream_socket(context, ZMQ_REQ);
+Socket  api_socket(context, ZMQ_REP);
 
-string zmq_server        = "";
-uint   zmq_subdelay      = 0;
-bool   zmq_runningstatus = false;
-
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
 int OnInit()
   {
 //---
-   Print("OnInit: ");
+   Print("OnInit2: ");
    if (DetectEnvironment() == false)
     {
     Alert("Error: The property is fail, please check and try again.");
     return(INIT_FAILED);
     }
-   StartZmqClient();
+   StartZmq();
 //---
+    string response = "";
+    string request = StreamDataToJsonString("ON_INIT", "{}");
+    bool result = ZmqRequest(&stream_socket, request, response);
+    if(result){
+        Print("Response: ", response);
+    }else{
+        Print("Error: ", GetLastError());
+    }
    return(INIT_SUCCEEDED);
   }
 //+------------------------------------------------------------------+
@@ -44,8 +51,14 @@ int OnInit()
 void OnDeinit(const int reason)
   {
 //---
-    //StopZmqClient();
-   
+    string response = "";
+    string request = StreamDataToJsonString("ON_DEINIT", "{}");
+    bool result = ZmqRequest(&stream_socket, request, response);
+    if(result){
+        Print("Response: ", response);
+    }else{
+        Print("Error: ", GetLastError());
+    }
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
@@ -53,49 +66,129 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
-   Print("OnTick");
-   
+    if(IsNewBar(Symbol(), PERIOD_M5)){     
+      MqlTick tick;
+      bool ok = GetCurrentTick(tick);
+      if (ok)
+      {
+        Print("Tick: ", tick.ask);
+        string response = "";
+        string tick_json = TickToJsonString(tick);
+        string request = StreamDataToJsonString("ON_TICK", StringFormat(
+          "{ \"tick\": %s}", tick_json));
+        bool result = ZmqRequest(&stream_socket, request, response);
+        if(result){
+            Print("Response: ", response);
+        }else{
+            Print("Error: ", GetLastError());
+        }
+      }
+    }
   }
+//+------------------------------------------------------------------+
 
 //+------------------------------------------------------------------+
 //| Detect the script parameters                                     |
 //+------------------------------------------------------------------+
 bool DetectEnvironment()
   {
-    if (Server == "") 
+    if (APIServer == "" || StreamServer == "") 
       return false;
     
-    zmq_server        = Server;
-    zmq_subdelay      = (ServerDelayMilliseconds > 0) ? ServerDelayMilliseconds : 10;
-    zmq_runningstatus = false;
+    api_server        = APIServer;
+    stream_server        = StreamServer;
     return true;
   }
+
+
 //+------------------------------------------------------------------+
-//| Start the zmq client                                             |
+//| Start the zmq server                                             |
 //+------------------------------------------------------------------+
-void StartZmqClient()
-  {
-    if (zmq_server == "") 
+void StartZmq()
+  {  
+    if (api_server == "" || stream_server == "")
       return;
-    
-    int result = socket.connect(zmq_server);
-    
+      
+    Print("Connecting to api server…");
+    stream_socket.connect(stream_server);
+
+    /*Print("Build api server…");
+    int result = api_socket.bind(stream_server);
     if (result != 1)
       {
-        Alert("Error: Unable to connect to the server, please check your server settings.");
+        Alert("Error: Unable to bind server, please check your port.");
         return;
-      }
-    
-    for(int request_nbr=0; request_nbr!=10 && !IsStopped(); request_nbr++)
-     {
-      ZmqMsg request("Hello");
-      PrintFormat("Sending Hello %d...",request_nbr);
-      socket.send(request);
-
-      // Get the reply.
-      ZmqMsg reply;
-      socket.recv(reply);
-      PrintFormat("Received World %d",request_nbr);
-     }
+      }*/
   }
 
+
+//+------------------------------------------------------------------+
+//| Push the message for all of the subscriber                       |
+//+------------------------------------------------------------------+
+bool ZmqRequest(Socket *socket, const string req_message, string res_message)
+  {
+    ZmqMsg request(req_message);
+    PrintFormat("Sending %d...",req_message);
+    socket.send(request);
+
+    // Get the reply.
+    ZmqMsg reply;
+    socket.recv(reply);
+    res_message=reply.getData();
+    PrintFormat("Received %d",res_message);
+    return true;
+  }
+
+//+------------------------------------------------------------------+
+//| Get Current Tick                                                 |
+//+------------------------------------------------------------------+
+bool GetCurrentTick(MqlTick &tick)
+  {
+    MqlTick ticks[];
+    if (CopyTicks(Symbol(), ticks, COPY_TICKS_ALL, 0, 1) == 1)
+      tick = ticks[0];
+      return true;
+    return false;
+  }
+
+//+------------------------------------------------------------------+
+//| Convert Tick to Json                                               |
+//+------------------------------------------------------------------+
+string TickToJsonString(MqlTick &tick)
+  {
+    return StringFormat(
+          "{ \"time\": \"%s\",\"bid\": %f,\"ask\": %f,\"last\": %f,\"volume\": %d,\"time_msc\": %d,\"flags\": %d,\"volume_real\": %f}",
+          TimeToString(tick.time, TIME_DATE|TIME_SECONDS),
+          tick.bid,
+          tick.ask,
+          tick.last,
+          tick.volume,
+          tick.time_msc,
+          tick.flags,
+          tick.volume_real
+        );
+  }
+
+//+------------------------------------------------------------------+
+//| Convert StreamData to Json                                               |
+//+------------------------------------------------------------------+
+string StreamDataToJsonString(string event, string data)
+  {
+    return StringFormat(
+          "{ \"event\": \"%s\",\"data\": %s}",
+          event,
+          data
+        );
+  }
+
+
+bool IsNewBar(string symbol, ENUM_TIMEFRAMES tf)
+{
+   static datetime time = 0;
+   if(iTime(symbol, tf, 0) != time)
+   {
+      time = iTime(symbol, tf, 0);
+      return true;
+   }
+   return false;
+}

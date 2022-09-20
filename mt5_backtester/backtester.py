@@ -1,12 +1,17 @@
 import logging
 from .server import Server
 from .api import API
-from .type import TradeRequest, Event
+from .type import TradeRequest, Event, Config, TimeFrame
+
+DEFAULT_CONFIG: Config = {
+    'timeframe': TimeFrame.PERIOD_M5, # call on_tick() every 5 minutes
+}
 
 class Backtester():
-    def __init__(self, level=logging.INFO):
+    def __init__(self, config=DEFAULT_CONFIG, level=logging.INFO):
         logging.basicConfig(format='%(asctime)s - [%(levelname)s] - %(message)s', level=level)
         self.logger = logging.getLogger(__name__)
+        self.config = config
         self.server = Server(address="127.0.0.1", port=5556)
         self.api = API(address="127.0.0.1", port=5557)
         self.setup()
@@ -32,6 +37,9 @@ class Backtester():
 
     def stream(self):
         for (event, data) in self.server.stream():
+            if event == Event.ON_INIT:
+                # send config
+                self.api.send_config(self.config)
             yield (event, data)
 
 if __name__ == "__main__":

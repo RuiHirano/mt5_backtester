@@ -67,6 +67,11 @@ class APIThread(threading.Thread):
                 position = Position(ticket=123456789, type=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", timestamp=123456789, swap=0.00, profit=0.00)
                 message = json.dumps(position._asdict())
                 self.socket.send_string(message)
+            elif api_request.type == APIRequestType.SEND_CONFIG:
+                config = api_request.data
+                position = Position(ticket=123456789, type=0, symbol="EURUSD", volume=1.00, open_price=1.23456, stoploss=1.23456, takeprofit=1.23456, comment="comment", timestamp=123456789, swap=0.00, profit=0.00)
+                message = json.dumps({"result": "ok"})
+                self.socket.send_string(message)
             else:
                 message = "Unknown"
                 self.socket.send_string(message)
