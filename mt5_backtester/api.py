@@ -33,6 +33,15 @@ class API:
         json_data = json.loads(recv_message)
         return json_data
 
+    def stop(self):
+        req = APIRequest(type=APIRequestType.STOP, data={})
+        req_str = json.dumps(req._asdict())
+        self.socket.send_string(req_str)
+        recv_message = self.socket.recv_string()
+        logger.debug("[stop] = %s" % recv_message)
+        json_data = json.loads(recv_message)
+        return json_data
+
     ####################
     # Time Series API  #
     ####################

@@ -27,7 +27,8 @@ class Backtester():
         self.logger.info('[backtester] Starting server...')
         self.server.start()
         self.api.connect()
-        self.logger.info('[backtester] Start at {}:{}'.format(self.server.address, self.server.port))
+        self.logger.info('[backtester] Start stream server at {}:{}'.format(self.server.address, self.server.port))
+        self.logger.info('[backtester] Connect api server at {}:{}'.format(self.api.address, self.api.port))
 
     def close(self):
         # stop server
@@ -38,9 +39,9 @@ class Backtester():
     def stream(self):
         for (event, data) in self.server.stream():
             if event == Event.ON_INIT:
-                # send config
                 self.api.send_config(self.config)
             yield (event, data)
+            self.api.stop()
 
 if __name__ == "__main__":
     with Backtester() as bt:

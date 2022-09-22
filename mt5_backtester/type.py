@@ -111,6 +111,7 @@ class APIRequestType(str, Enum):
     GET_HISTORY_POSITIONS = "GET_HISTORY_POSITIONS"
     GET_HISTORY_POSITION = "GET_HISTORY_POSITION"
     SEND_CONFIG = "SEND_CONFIG"
+    STOP = "STOP"
 
 class APIRequest(NamedTuple):
     type: APIRequestType

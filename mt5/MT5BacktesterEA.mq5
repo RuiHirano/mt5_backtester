@@ -21,6 +21,12 @@ Context context(appname);
 Socket  stream_socket(context, ZMQ_REQ);
 Socket  api_socket(context, ZMQ_REP);
 
+struct APIRequest
+  {
+    string type;
+    string data;
+  };
+
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -112,15 +118,65 @@ void StartZmq()
     Print("Connecting to api server…");
     stream_socket.connect(stream_server);
 
-    /*Print("Build api server…");
+    Print("Build api server…");
     int result = api_socket.bind(stream_server);
     if (result != 1)
       {
         Alert("Error: Unable to bind server, please check your port.");
         return;
-      }*/
+      }
   }
 
+void RunAPI()
+{
+  bool stop_flag = false;
+  while(!IsStopped() && !stop_flag)
+    {
+      ZmqMsg request;
+      socket.recv(request);
+      string req_message = request.getData();
+      APIRequest api_request = JsonStringToAPIRequest(req_message);
+      Print("Receive Hello");
+      string response = "";
+      switch(api_request.type){
+        case "GET_RATES":
+          break;
+        case "GET_ACCOUNT_INFO":
+          response = GetAccountInfo();
+          break;
+        case "ORDER_SEND":
+          break;
+        case "GET_ORDER":
+          break;
+        case "GET_ORDERS":
+          break;
+        case "GET_POSITION":
+          break;
+        case "GET_POSITIONS":
+          break;
+        case "GET_HISTORY_ORDER":
+          break;
+        case "GET_HISTORY_ORDERS":
+          break;
+        case "GET_HISTORY_POSITION":
+          break;
+        case "GET_HISTORY_POSITIONS":
+          break;
+        case "SEND_CONFIG":
+          response = '{\"result\": \"Ok\"}';
+          break;
+        case "STOP":
+          stop_flag = true;
+          response = '{\"result\": \"Stop\"}';
+          break;
+        default:
+          response = '{\"result\": \"Unknown request\"}';
+          break;
+      }
+      ZmqMsg reply(response);
+      socket.send(reply);
+    }
+}
 
 //+------------------------------------------------------------------+
 //| Push the message for all of the subscriber                       |
@@ -191,4 +247,20 @@ bool IsNewBar(string symbol, ENUM_TIMEFRAMES tf)
       return true;
    }
    return false;
+}
+
+string GetAccountInfo()
+{
+  string result = "";
+  result = StringFormat(
+    "{\"balance\": %f,\"credit\": %f,\"equity\": %f,\"margin_free\": %f,\"margin\": %f,\"margin_level\": %f,\"profit\": %f}",
+    AccountBalance(),
+    AccountCredit(),
+    AccountEquity(),
+    AccountFreeMargin(),
+    AccountMargin(),
+    AccountMarginLevel(),
+    AccountProfit()
+  );
+  return result;
 }

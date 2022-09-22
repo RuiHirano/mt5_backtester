@@ -1,0 +1,11 @@
+
+☐ EAを止めた際、OnDeinitでAPIのStop responseが帰ってこないためTerminalが終了しない
+====OnDeinit======
+[INFO] - [stop] - start
+で止まる
+
+☐ Terminalを止めた際、EA側も止まるようにする
+
+☐ socketのunbindができず、毎回再起動しないといけない
+☐ コマンドプロンプトを毎回再起動しないといけない
+☐ Testerを終了するとしばらくagent busyになる
